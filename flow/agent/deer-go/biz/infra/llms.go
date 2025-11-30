@@ -18,41 +18,54 @@ package infra
 
 import (
 	"context"
+	"os"
 
+	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/openai"
-	openai3 "github.com/cloudwego/eino-ext/libs/acl/openai"
-	"github.com/getkin/kin-openapi/openapi3gen"
+	einomodel "github.com/cloudwego/eino/components/model"
+	arkModel "github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
 
-	"github.com/cloudwego/eino-examples/flow/agent/deer-go/biz/model"
 	"github.com/cloudwego/eino-examples/flow/agent/deer-go/conf"
 )
 
 var (
-	ChatModel *openai.ChatModel
-	PlanModel *openai.ChatModel
+	ChatModel einomodel.ToolCallingChatModel
+	PlanModel einomodel.ToolCallingChatModel
 )
 
 func InitModel() {
-	config := &openai.ChatModelConfig{
-		BaseURL: conf.Config.Model.BaseURL,
-		APIKey:  conf.Config.Model.APIKey,
-		Model:   conf.Config.Model.DefaultModel,
-	}
-	ChatModel, _ = openai.NewChatModel(context.Background(), config)
-	planSchema, _ := openapi3gen.NewSchemaRefForValue(&model.Plan{}, nil)
-
-	planconfig := &openai.ChatModelConfig{
-		BaseURL: conf.Config.Model.BaseURL,
-		APIKey:  conf.Config.Model.APIKey,
-		Model:   conf.Config.Model.DefaultModel,
-		ResponseFormat: &openai3.ChatCompletionResponseFormat{
-			Type: openai3.ChatCompletionResponseFormatTypeJSONSchema,
-			JSONSchema: &openai3.ChatCompletionResponseFormatJSONSchema{
-				Name:   "plan",
-				Strict: false,
-				Schema: planSchema.Value,
+	if os.Getenv("MODEL_TYPE") == "ark" {
+		cm, _ := ark.NewChatModel(context.Background(), &ark.ChatModelConfig{
+			APIKey:  os.Getenv("ARK_API_KEY"),
+			Model:   os.Getenv("ARK_MODEL"),
+			BaseURL: os.Getenv("ARK_BASE_URL"),
+			Thinking: &arkModel.Thinking{
+				Type: arkModel.ThinkingTypeDisabled,
 			},
-		},
+		})
+		ChatModel = cm
+		PlanModel = cm
+		return
 	}
-	PlanModel, _ = openai.NewChatModel(context.Background(), planconfig)
+
+	base := conf.Config.Model.BaseURL
+	key := conf.Config.Model.APIKey
+	mdl := conf.Config.Model.DefaultModel
+	if key == "" {
+		key = os.Getenv("OPENAI_API_KEY")
+	}
+	if mdl == "" {
+		mdl = os.Getenv("OPENAI_MODEL")
+	}
+	if base == "" {
+		base = os.Getenv("OPENAI_BASE_URL")
+	}
+	cm, _ := openai.NewChatModel(context.Background(), &openai.ChatModelConfig{
+		BaseURL: base,
+		APIKey:  key,
+		Model:   mdl,
+		ByAzure: func() bool { return os.Getenv("OPENAI_BY_AZURE") == "true" }(),
+	})
+	ChatModel = cm
+	PlanModel = cm
 }

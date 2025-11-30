@@ -1,0 +1,21 @@
+[90m2025-11-30 12:28:08.847077[0m [32mINF[0m [1mconf/config.go:73[0m[36m >[0m [36mevent=[0mload_config [36mlog_id=[0m [36mpayload=[0m{"conf":"{\"MCP\":{\"Servers\":{\"python\":{\"Command\":\"uv\",\"Args\":[\"--directory\",\"biz/mcps/python\",\"run\",\"server.py\"],\"Env\":null},\"tavily\":{\"Command\":\"npx\",\"Args\":[\"-y\",\"tavily-mcp@0.1.3\"],\"Env\":{\"TAVILY_API_KEY\":\"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\"}}}},\"Model\":{\"DefaultModel\":\"\",\"APIKey\":\"\",\"BaseURL\":\"\"},\"Setting\":{\"MaxPlanIterations\":2,\"MaxStepNum\":3}}"} [36msuffix=[0mnull
+[90m2025-11-30 12:28:08.848897[0m [32mINF[0m [1mbiz/infra/mcp.go:132[0m[36m >[0m [36mevent=[0m"load mcp client" [36mlog_id=[0m [36mpayload=[0m{"tavily":"stdio"} [36msuffix=[0mnull
+[90m2025-11-30 12:28:08.850529[0m [32mINF[0m [1mbiz/infra/mcp.go:169[0m[36m >[0m [36mevent=[0m"Initializing server..." [36mlog_id=[0m [36mpayload=[0m{"name":"tavily"} [36msuffix=[0mnull
+[90m2025-11-30 12:28:10.181330[0m [32mINF[0m [1mbiz/infra/mcp.go:132[0m[36m >[0m [36mevent=[0m"load mcp client" [36mlog_id=[0m [36mpayload=[0m{"python":"stdio"} [36msuffix=[0mnull
+[90m2025-11-30 12:28:10.182405[0m [32mINF[0m [1mbiz/infra/mcp.go:169[0m[36m >[0m [36mevent=[0m"Initializing server..." [36mlog_id=[0m [36mpayload=[0m{"name":"python"} [36msuffix=[0mnull
+请输入你的需求： 
+==================
+ [OnStart] coordinator 
+==================
+=========[OnError]=========
+Error code: 429 - {"code":"SetLimitExceeded","message":"Your account [2101141013] has reached the set inference limit for the [doubao-seed-1-6] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mode\". Request id: 0217644768918673683317075330b6cc9f64af0089ac7f947c058","param":"","type":"TooManyRequests","request_id":"202511301228110000E41BB1C81E5C9216"}
+=========[OnError]=========
+[NodeRunError] Error code: 429 - {"code":"SetLimitExceeded","message":"Your account [2101141013] has reached the set inference limit for the [doubao-seed-1-6] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mode\". Request id: 0217644768918673683317075330b6cc9f64af0089ac7f947c058","param":"","type":"TooManyRequests","request_id":"202511301228110000E41BB1C81E5C9216"}
+------------------------
+node path: [agent]
+=========[OnError]=========
+[NodeRunError] Error code: 429 - {"code":"SetLimitExceeded","message":"Your account [2101141013] has reached the set inference limit for the [doubao-seed-1-6] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mode\". Request id: 0217644768918673683317075330b6cc9f64af0089ac7f947c058","param":"","type":"TooManyRequests","request_id":"202511301228110000E41BB1C81E5C9216"}
+------------------------
+node path: [coordinator, agent]
+[90m2025-11-30 12:28:11.916836[0m [31mERR[0m [1mmain.go:133[0m[36m >[0m [36mevent=[0m"run failed" [36mlog_id=[0m [36mpayload=[0m{"err":"[NodeRunError] Error code: 429 - {\"code\":\"SetLimitExceeded\",\"message\":\"Your account [2101141013] has reached the set inference limit for the [doubao-seed-1-6] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \\\"Safe Experience Mode\\\". Request id: 0217644768918673683317075330b6cc9f64af0089ac7f947c058\",\"param\":\"\",\"type\":\"TooManyRequests\",\"request_id\":\"202511301228110000E41BB1C81E5C9216\"}\n------------------------\nnode path: [coordinator, agent]"} [36msuffix=[0mnull
+[90m2025-11-30 12:28:11.917175[0m [32mINF[0m [1mmain.go:135[0m[36m >[0m [36mevent=[0m"run console finish" [36mlog_id=[0m [36mpayload=[0m{"time.Date(2025, time.November, 30, 12, 28, 11, 917142000, time.Local)":""} [36msuffix=[0mnull

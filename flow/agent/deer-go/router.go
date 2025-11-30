@@ -27,4 +27,5 @@ import (
 // customizeRegister registers customize routers.
 func customizedRegister(r *server.Hertz) {
 	r.POST("/api/chat/stream", handler.ChatStreamEino)
+	r.POST("/v1/chat/completions", handler.ChatStreamADK)
 }

@@ -195,3 +195,64 @@ func (cb *LoggerCallback) OnStartWithStreamInput(ctx context.Context, info *call
 	defer input.Close()
 	return ctx
 }
+
+type ADKLoggerCallback struct {
+	callbacks.HandlerBuilder
+	SSE *sse.Writer
+}
+
+func (cb *ADKLoggerCallback) pushMsg(ctx context.Context, msg *schema.Message) error {
+	if msg == nil {
+		return nil
+	}
+	if cb.SSE == nil {
+		return nil
+	}
+	return cb.SSE.WriteEvent("", "message", []byte(msg.Content))
+}
+
+func (cb *ADKLoggerCallback) OnEndWithStreamOutput(ctx context.Context, info *callbacks.RunInfo,
+	output *schema.StreamReader[callbacks.CallbackOutput]) context.Context {
+	go func() {
+		defer output.Close()
+		for {
+			frame, err := output.Recv()
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			if err != nil {
+				return
+			}
+			switch v := frame.(type) {
+			case *schema.Message:
+				_ = cb.pushMsg(ctx, v)
+			case *ecmodel.CallbackOutput:
+				_ = cb.pushMsg(ctx, v.Message)
+			case []*schema.Message:
+				for _, m := range v {
+					_ = cb.pushMsg(ctx, m)
+				}
+			default:
+			}
+		}
+	}()
+	return ctx
+}
+
+func (cb *ADKLoggerCallback) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
+	return ctx
+}
+
+func (cb *ADKLoggerCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
+	return ctx
+}
+
+func (cb *ADKLoggerCallback) OnError(ctx context.Context, info *callbacks.RunInfo, err error) context.Context {
+	return ctx
+}
+
+func (cb *ADKLoggerCallback) OnStartWithStreamInput(ctx context.Context, info *callbacks.RunInfo,
+	input *schema.StreamReader[callbacks.CallbackInput]) context.Context {
+	defer input.Close()
+	return ctx
+}

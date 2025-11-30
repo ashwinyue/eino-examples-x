@@ -33,6 +33,8 @@ import (
 	"github.com/cloudwego/eino-examples/flow/agent/deer-go/biz/infra"
 	"github.com/cloudwego/eino-examples/flow/agent/deer-go/biz/model"
 	"github.com/cloudwego/eino-examples/flow/agent/deer-go/biz/util"
+	"github.com/cloudwego/eino-examples/flow/agent/deer-go/conf"
+	"github.com/cloudwego/eino/schema"
 )
 
 func ChatStreamEino(ctx context.Context, c *app.RequestContext) {
@@ -114,5 +116,52 @@ func ChatStreamEino(ctx context.Context, c *app.RequestContext) {
 	}
 	if err != nil {
 		ilog.EventError(ctx, err, "ChatStream_error")
+	}
+}
+
+func ChatStreamADK(ctx context.Context, c *app.RequestContext) {
+	c.SetContentType("text/event-stream; charset=utf-8")
+	c.Response.Header.Set("Cache-Control", "no-cache")
+	c.Response.Header.Set("Connection", "keep-alive")
+	c.Response.Header.Set("Access-Control-Allow-Origin", "*")
+	c.SetStatusCode(http.StatusOK)
+	w := sse.NewWriter(c)
+	defer w.Close()
+
+	var req struct {
+		Messages []struct {
+			Role    string `json:"role"`
+			Content string `json:"content"`
+		} `json:"messages"`
+	}
+	if err := c.BindAndValidate(&req); err != nil {
+		return
+	}
+
+	msgs := []*schema.Message{}
+	for _, m := range req.Messages {
+		if m.Role == "user" {
+			msgs = append(msgs, schema.UserMessage(m.Content))
+		} else if m.Role == "assistant" {
+			msgs = append(msgs, schema.AssistantMessage(m.Content, nil))
+		}
+	}
+
+	genFunc := func(ctx context.Context) *model.State {
+		return &model.State{
+			MaxPlanIterations:             conf.Config.Setting.MaxPlanIterations,
+			MaxStepNum:                    conf.Config.Setting.MaxStepNum,
+			Messages:                      msgs,
+			Goto:                          consts.Coordinator,
+			EnableBackgroundInvestigation: false,
+		}
+	}
+
+	r := eino.Builder[string, string, *model.State](ctx, genFunc)
+	_, err := r.Stream(ctx, consts.Coordinator,
+		compose.WithCallbacks(&infra.ADKLoggerCallback{SSE: w}),
+	)
+	if err != nil {
+		ilog.EventError(ctx, err, "ChatStreamADK_error")
 	}
 }
